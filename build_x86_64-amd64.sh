@@ -708,7 +708,7 @@ sudo cat /home/admin/raspiblitz.info
 
 # *** RASPIBLITZ IMAGE READY INFO ***
 echo -e "\n**********************************************"
-echo "BASIC SD CARD BUILD DONE"
+echo "BASIC BOX BUILD DONE"
 echo -e "**********************************************\n"
 echo "Your SD Card Image for RaspiBlitz is ready (might still do display config)."
 echo "Take the chance & look thru the output above if you can spot any errors or warnings."
