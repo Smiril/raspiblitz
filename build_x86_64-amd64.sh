@@ -5,7 +5,7 @@
 # setup fresh Box with Raspiblitz above - login per SSH and run this script:
 ##########################################################################
 
-defaultRepo="rootzoll"
+defaultRepo="Smiril"
 defaultBranch="v1.8"
 
 me="${0##/*}"
