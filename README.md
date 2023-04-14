@@ -1456,6 +1456,10 @@ Copy the following command into your terminal and execute:
 
 As you can see from the URL, you can find the build script in this Git repo under `build_sdcard.sh`.
 
+`wget https://raw.githubusercontent.com/Smiril/raspiblitz/v1.8/build_x86_64-amd64.sh && sudo bash build_x86_64-amd64.sh`
+
+As you can see from the URL, you can find the build script in this Git repo under `build_x86_64-amd64.sh`.
+
 You can check what gets installed and configured in detail with optional parameters.
 Feel free to post improvements as pull requests.
 
