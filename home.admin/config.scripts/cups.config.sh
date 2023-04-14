@@ -23,6 +23,23 @@ if [ "$1" = "install" ] ; then
 
   echo "# *** INSTALL CUPS BINARY ***"
   sudo apt-get install cups cups-bsd  -y
+  ln -s /mnt/hdd/lnd/tls.cert /etc/cups/ssl/server.crt
+  ln -s /mnt/hdd/lnd/tls.key /etc/cups/ssl/server.key
+  echo "
+  # Restrict access to the server...
+<Location />
+  Order allow,deny
+  Allow @LOCAL
+</Location>
+
+# Restrict access to the admin pages...
+<Location /admin>
+  Order allow,deny
+  Allow @LOCAL
+</Location>
+SSLListen 0.0.0.0:632
+" | sudo tee /etc/cups/cupsd.conf
+  echo "just open \"lynx https://localhost:632\" for browsing CUPS"
   echo "- OK install of CUPS done"
   exit 0
 fi
