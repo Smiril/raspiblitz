@@ -455,6 +455,7 @@ echo -e "\n*** ADDING MAIN USER admin ***"
 sudo adduser --disabled-password --gecos "" admin
 echo "admin:raspiblitz" | sudo chpasswd
 sudo adduser admin sudo
+sudo adduser admin lpadmin
 sudo chsh admin -s /bin/bash
 # configure sudo for usage without password entry
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
