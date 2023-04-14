@@ -455,7 +455,6 @@ echo -e "\n*** ADDING MAIN USER admin ***"
 sudo adduser --disabled-password --gecos "" admin
 echo "admin:raspiblitz" | sudo chpasswd
 sudo adduser admin sudo
-sudo adduser admin lpadmin 
 sudo chsh admin -s /bin/bash
 # configure sudo for usage without password entry
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
@@ -670,7 +669,12 @@ if ${fatpack}; then
 
   echo "* Adding LND ..."
   /home/admin/config.scripts/lnd.install.sh install || exit 1
-
+  
+  echo "* Adding CUPS ..."
+  /home/admin/config.scripts/cups.config.sh install || exit 1
+  echo "* Enable CUPS ..."
+  /home/admin/config.scripts/cups.config.sh on || exit 1
+  
   echo "* Adding Core Lightning ..."
   /home/admin/config.scripts/cl.install.sh install || exit 1
   echo "* Adding the cln-grpc plugin ..."
