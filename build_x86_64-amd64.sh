@@ -448,7 +448,6 @@ echo "
 sudo mv ./rsyslog /etc/logrotate.d/rsyslog
 sudo chown root:root /etc/logrotate.d/rsyslog
 sudo service rsyslog restart
-
 echo -e "\n*** ADDING MAIN USER admin ***"
 # based on https://raspibolt.org/system-configuration.html#add-users
 # using the default password 'raspiblitz'
@@ -534,47 +533,139 @@ echo -e "\n*** RASPIBLITZ EXTRAS ***"
 # fzf install a command-line fuzzy finder (https://github.com/junegunn/fzf)
 apt_install tmux screen fzf
 
-sudo bash -c "echo '' >> /home/admin/.bashrc"
-sudo bash -c "echo '# https://github.com/rootzoll/raspiblitz/issues/1784' >> /home/admin/.bashrc"
-sudo bash -c "echo 'NG_CLI_ANALYTICS=ci' >> /home/admin/.bashrc"
+echo "
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
 
-# raspiblitz custom command prompt #2400
-if ! grep -Eq "^[[:space:]]*PS1.*₿" /home/admin/.bashrc; then
-    sudo sed -i '/^unset color_prompt force_color_prompt$/i # raspiblitz custom command prompt https://github.com/rootzoll/raspiblitz/issues/2400' /home/admin/.bashrc
-    sudo sed -i '/^unset color_prompt force_color_prompt$/i raspiIp=$(hostname -I | cut -d " " -f1)' /home/admin/.bashrc
-    sudo sed -i '/^unset color_prompt force_color_prompt$/i if [ "$color_prompt" = yes ]; then' /home/admin/.bashrc
-    sudo sed -i '/^unset color_prompt force_color_prompt$/i \    PS1=\x27${debian_chroot:+($debian_chroot)}\\[\\033[00;33m\\]\\u@$raspiIp:\\[\\033[00;34m\\]\\w\\[\\033[01;35m\\]$(__git_ps1 "(%s)") \\[\\033[01;33m\\]₿\\[\\033[00m\\] \x27' /home/admin/.bashrc
-    sudo sed -i '/^unset color_prompt force_color_prompt$/i else' /home/admin/.bashrc
-    sudo sed -i '/^unset color_prompt force_color_prompt$/i \    PS1=\x27${debian_chroot:+($debian_chroot)}\\u@$raspiIp:\\w₿ \x27' /home/admin/.bashrc
-    sudo sed -i '/^unset color_prompt force_color_prompt$/i fi' /home/admin/.bashrc
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern \"**\" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+#[ -x /usr/bin/lesspipe ] && eval \"$(SHELL=/bin/sh lesspipe)\"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z \"${debian_chroot:-}\" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
 fi
 
-echo -e "\n*** FUZZY FINDER KEY BINDINGS ***"
-homeFile=/home/admin/.bashrc
-keyBindingsDone=$(grep -c "source /usr/share/doc/fzf/examples/key-bindings.bash" $homeFile)
-if [ ${keyBindingsDone} -eq 0 ]; then
-  sudo bash -c "echo 'source /usr/share/doc/fzf/examples/key-bindings.bash' >> /home/admin/.bashrc"
-  echo "key-bindings added to $homeFile"
+# set a fancy prompt (non-color, unless we know we \"want\" color)
+case \"$TERM\" in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+force_color_prompt=yes
+
+if [ -n \"$force_color_prompt\" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    color_prompt=yes
+    else
+    color_prompt=
+    fi
+fi
+
+if [ \"$color_prompt\" = yes ]; then
+    PS1=\'${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w \$\[\033[00m\] \'
 else
-  echo "key-bindings already in $homeFile"
+    PS1=\'${debian_chroot:+($debian_chroot)}\u@\h:\w\$ \'
+fi
+# raspiblitz custom command prompt https://github.com/rootzoll/raspiblitz/issues/2400
+raspiIp=$(hostname -I | cut -d \" \" -f1)
+if [ \"$color_prompt\" = yes ]; then
+    PS1=\'${debian_chroot:+($debian_chroot)}\[\033[00;33m\]\u@$raspiIp:\[\033[00;34m\]\w\[\033[01;35m\]$(__git_ps1 "(%s)") \[\033[01;33m\]₿\[\033[00m\] \'
+else
+    PS1=\'${debian_chroot:+($debian_chroot)}\u@$raspiIp:\w₿ \'
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case \"$TERM\" in
+xterm*|rxvt*)
+    PS1=\"\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1\"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval \"$(dircolors -b ~/.dircolors)\" || eval \"$(dircolors -b)\"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
 fi
 
-echo -e "\n*** AUTOSTART ADMIN SSH MENUS ***"
-homeFile=/home/admin/.bashrc
-autostartDone=$(grep -c "automatically start main menu" $homeFile)
-if [ ${autostartDone} -eq 0 ]; then
-  # bash autostart for admin
-  sudo bash -c "echo '# shortcut commands' >> /home/admin/.bashrc"
-  sudo bash -c "echo 'source /home/admin/_commands.sh' >> /home/admin/.bashrc"
-  sudo bash -c "echo '# automatically start main menu for admin unless' >> /home/admin/.bashrc"
-  sudo bash -c "echo '# when running in a tmux session' >> /home/admin/.bashrc"
-  sudo bash -c "echo 'if [ -z \"\$TMUX\" ]; then' >> /home/admin/.bashrc"
-  sudo bash -c "echo '    ./00raspiblitz.sh newsshsession' >> /home/admin/.bashrc"
-  sudo bash -c "echo 'fi' >> /home/admin/.bashrc"
-  echo "autostart added to $homeFile"
-else
-  echo "autostart already in $homeFile"
+# colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# some more ls aliases
+#alias ll='ls -l'
+#alias la='ls -A'
+#alias l='ls -CF'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
 fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+# https://github.com/rootzoll/raspiblitz/issues/1784
+NG_CLI_ANALYTICS=ci
+source /usr/share/doc/fzf/examples/key-bindings.bash
+# shortcut commands
+source /home/admin/_commands.sh
+# automatically start main menu for admin unless
+# when running in a tmux session
+if [ -z \"$TMUX\" ]; then
+    ./00raspiblitz.sh newsshsession
+fi
+" > /home/admin/.bashrc
 
 echo -e "\n*** SWAP FILE ***"
 # based on https://stadicus.github.io/RaspiBolt/raspibolt_20_pi.html#move-swap-file
