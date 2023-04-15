@@ -731,23 +731,23 @@ sudo cp /home/admin/assets/background.service /etc/systemd/system/background.ser
 sudo systemctl enable background
 
 # *** BACKGROUND SCAN ***
-/home/admin/_background.scan.sh install
+sudo /home/admin/_background.scan.sh install
 
 #######
 # TOR #
 #######
 echo
-/home/admin/config.scripts/tor.install.sh install || exit 1
+sudo /home/admin/config.scripts/tor.install.sh install || exit 1
 
 ###########
 # BITCOIN #
 ###########
 echo
-/home/admin/config.scripts/bitcoin.install.sh install || exit 1
+sudo /home/admin/config.scripts/bitcoin.install.sh install || exit 1
 
 # *** BLITZ WEB SERVICE ***
 echo "Provisioning BLITZ WEB SERVICE"
-/home/admin/config.scripts/blitz.web.sh http-on || exit 1
+sudo /home/admin/config.scripts/blitz.web.sh http-on || exit 1
 
 # *** FATPACK *** (can be activated by parameter - see details at start of script)
 if ${fatpack}; then
@@ -760,17 +760,17 @@ if ${fatpack}; then
   apt_install qrencode secure-delete fbi ssmtp unclutter xterm python3-pyqt5 xfonts-terminus apache2-utils nginx python3-jinja2 socat libatlas-base-dev hexyl autossh
 
   echo "* Adding LND ..."
-  /home/admin/config.scripts/lnd.install.sh install || exit 1
+  sudo /home/admin/config.scripts/lnd.install.sh install || exit 1
   
   echo "* Adding CUPS ..."
-  /home/admin/config.scripts/cups.config.sh install || exit 1
+  sudo /home/admin/config.scripts/cups.config.sh install || exit 1
   echo "* Enable CUPS ..."
-  /home/admin/config.scripts/cups.config.sh on || exit 1
+  sudo /home/admin/config.scripts/cups.config.sh on || exit 1
   
   echo "* Adding Core Lightning ..."
-  /home/admin/config.scripts/cl.install.sh install || exit 1
+  sudo /home/admin/config.scripts/cl.install.sh install || exit 1
   echo "* Adding the cln-grpc plugin ..."
-  /home/admin/config.scripts/cl-plugin.cln-grpc.sh install || exit 1
+  sudo /home/admin/config.scripts/cl-plugin.cln-grpc.sh install || exit 1
 
   # *** UPDATE FALLBACK NODE LIST (only as part of fatpack) *** see https://github.com/rootzoll/raspiblitz/issues/1888
   echo "*** FALLBACK NODE LIST ***"
